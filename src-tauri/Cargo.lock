@@ -7374,6 +7374,7 @@ dependencies = [
  "futures-util",
  "hex",
  "keyring",
+ "libc",
  "log",
  "mongodb",
  "printpdf",

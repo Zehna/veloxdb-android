@@ -627,7 +627,7 @@ fn mongo_connection_string_custom_port() {
 fn redis_url_no_auth() {
     let input = redis_input_default();
     let url = build_redis_url(&input);
-    assert_eq!(url, "redis://redis.example.com:6379");
+    assert_eq!(url, "redis://redis.example.com:6379/0");
 }
 
 #[test]
@@ -638,7 +638,7 @@ fn redis_url_with_auth() {
         ..redis_input_default()
     };
     let url = build_redis_url(&input);
-    assert_eq!(url, "redis://default:secret@redis.example.com:6379");
+    assert_eq!(url, "redis://default:secret@redis.example.com:6379/0");
 }
 
 #[test]
@@ -649,7 +649,7 @@ fn redis_url_defaults_to_localhost() {
         ..redis_input_default()
     };
     let url = build_redis_url(&input);
-    assert_eq!(url, "redis://127.0.0.1:6379");
+    assert_eq!(url, "redis://127.0.0.1:6379/0");
 }
 
 // ── Identifier safety ──────────────────────────────────────────

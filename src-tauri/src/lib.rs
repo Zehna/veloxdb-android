@@ -31,6 +31,10 @@ pub fn run() {
     .plugin(tauri_plugin_store::Builder::default().build())
     .plugin(tauri_plugin_dialog::init())
     .setup(|app| {
+      #[cfg(desktop)]
+      {
+        // Guard desktop window operations (decorations, window resizing, centering)
+      }
       if cfg!(debug_assertions) {
         app.handle().plugin(
           tauri_plugin_log::Builder::default()
@@ -41,6 +45,7 @@ pub fn run() {
       Ok(())
     })
     .on_window_event(|window, event| {
+      #[cfg(desktop)]
       if let tauri::WindowEvent::Destroyed = event {
         let handle = window.app_handle();
         let state: tauri::State<AppState> = handle.state();
@@ -50,6 +55,10 @@ pub fn run() {
             tunnel.close().await;
           });
         }
+      }
+      #[cfg(not(desktop))]
+      {
+        let _ = (window, event);
       }
     })
     .invoke_handler(tauri::generate_handler![

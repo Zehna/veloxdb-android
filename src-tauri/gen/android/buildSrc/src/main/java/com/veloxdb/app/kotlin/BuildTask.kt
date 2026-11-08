@@ -60,6 +60,15 @@ abstract class BuildTask : DefaultTask() {
                 }
                 Files.copy(srcLib.toPath(), dstLib.toPath(), StandardCopyOption.REPLACE_EXISTING)
                 println("Copied ${srcLib.path} to ${dstLib.path}")
+                val ndkEnv = System.getenv("NDK_HOME") ?: System.getenv("ANDROID_NDK_ROOT")
+                if (ndkEnv != null) {
+                    val ndkLibcxx = File(ndkEnv, "toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/lib/$rustTarget/libc++_shared.so")
+                    val dstLibcxx = File(dstDir, "libc++_shared.so")
+                    if (ndkLibcxx.exists()) {
+                        Files.copy(ndkLibcxx.toPath(), dstLibcxx.toPath(), StandardCopyOption.REPLACE_EXISTING)
+                        println("Copied ${ndkLibcxx.path} to ${dstLibcxx.path}")
+                    }
+                }
                 return
             }
 

@@ -18,7 +18,7 @@ android {
     compileSdk = 37
     namespace = "com.veloxdb.app"
     defaultConfig {
-        manifestPlaceholders["usesCleartextTraffic"] = "false"
+        manifestPlaceholders["usesCleartextTraffic"] = "true"
         applicationId = "com.veloxdb.app"
         minSdk = 24
         targetSdk = 37
@@ -39,6 +39,7 @@ android {
             }
         }
         getByName("release") {
+            manifestPlaceholders["usesCleartextTraffic"] = "true"
             signingConfig = signingConfigs.getByName("debug")
             optimization {
                enable = true
@@ -82,3 +83,36 @@ dependencies {
 }
 
 apply(from = file("tauri.build.gradle.kts"))
+
+tasks.register("copyNdkLibCpp") {
+    notCompatibleWithConfigurationCache("Copies NDK shared libraries dynamically")
+    doLast {
+        val ndkDirStr = System.getenv("NDK_HOME") ?: System.getenv("ANDROID_NDK_ROOT")
+        val ndkDir = if (ndkDirStr != null) file(ndkDirStr) else null
+        val abiMap = mapOf(
+            "arm64-v8a" to "aarch64-linux-android",
+            "armeabi-v7a" to "arm-linux-androideabi",
+            "x86" to "i686-linux-android",
+            "x86_64" to "x86_64-linux-android"
+        )
+        abiMap.forEach { (abi, triple) ->
+            val destDir = file("src/main/jniLibs/$abi")
+            val destFile = file("$destDir/libc++_shared.so")
+            if (!destFile.exists() && ndkDir != null && ndkDir.exists()) {
+                val libcxxFile = fileTree(ndkDir) {
+                    include("**/$triple/libc++_shared.so")
+                }.firstOrNull()
+                if (libcxxFile != null && libcxxFile.exists()) {
+                    destDir.mkdirs()
+                    libcxxFile.copyTo(destFile, overwrite = true)
+                    println("Copied libc++_shared.so for $abi from ${libcxxFile.path}")
+                }
+            }
+        }
+    }
+}
+
+tasks.matching { it.name.startsWith("merge") && it.name.endsWith("JniLibFolders") }.configureEach {
+    dependsOn("copyNdkLibCpp")
+}
+

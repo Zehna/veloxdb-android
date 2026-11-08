@@ -2,6 +2,20 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <script>
+      window.onerror = function(msg, url, line, col, err) {
+        var b = document.createElement('div');
+        b.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:#990000;color:white;padding:24px;z-index:999999;font-family:monospace;font-size:12px;overflow:auto;word-break:break-all;';
+        b.innerHTML = '<h3>JavaScript Error:</h3><pre>' + msg + '\n' + url + ':' + line + '\n' + (err ? (err.stack || err) : '') + '</pre>';
+        (document.body || document.documentElement).appendChild(b);
+      };
+      window.onunhandledrejection = function(e) {
+        var b = document.createElement('div');
+        b.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:#660000;color:white;padding:24px;z-index:999999;font-family:monospace;font-size:12px;overflow:auto;word-break:break-all;';
+        b.innerHTML = '<h3>Unhandled Promise:</h3><pre>' + (e.reason ? (e.reason.stack || e.reason) : e) + '</pre>';
+        (document.body || document.documentElement).appendChild(b);
+      };
+    </script>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta
       name="viewport"

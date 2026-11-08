@@ -2,13 +2,28 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <script>
+      window.onerror = function(msg, url, line, col, err) {
+        var b = document.createElement('div');
+        b.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:#990000;color:white;padding:24px;z-index:999999;font-family:monospace;font-size:12px;overflow:auto;word-break:break-all;';
+        b.innerHTML = '<h3>JavaScript Error:</h3><pre>' + msg + '\n' + url + ':' + line + '\n' + (err ? (err.stack || err) : '') + '</pre>';
+        (document.body || document.documentElement).appendChild(b);
+      };
+      window.onunhandledrejection = function(e) {
+        var b = document.createElement('div');
+        b.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:#660000;color:white;padding:24px;z-index:999999;font-family:monospace;font-size:12px;overflow:auto;word-break:break-all;';
+        b.innerHTML = '<h3>Unhandled Promise:</h3><pre>' + (e.reason ? (e.reason.stack || e.reason) : e) + '</pre>';
+        (document.body || document.documentElement).appendChild(b);
+      };
+    </script>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
+    />
     <title>veloxdb</title>
-    <script type="module" crossorigin src="/assets/index-BAedyhxq.js"></script>
-    <link rel="modulepreload" crossorigin href="/assets/editor.api2-CkmTwjM4.js">
-    <link rel="stylesheet" crossorigin href="/assets/editor-Br_kD0ds.css">
-    <link rel="stylesheet" crossorigin href="/assets/index-DMwvDx_4.css">
+    <script type="module" crossorigin src="/assets/index-xNtiS4lB.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-GGTJUcrM.css">
   </head>
   <body>
     <div id="root"></div>

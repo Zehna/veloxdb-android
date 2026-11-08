@@ -26,6 +26,29 @@ use tauri::Manager;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
+  #[cfg(target_os = "android")]
+  {
+    std::panic::set_hook(Box::new(|info| {
+      let msg = format!("Rust PANIC: {}", info);
+      if let Ok(tag) = std::ffi::CString::new("VeloxDB") {
+        if let Ok(msg_c) = std::ffi::CString::new(msg.as_str()) {
+          unsafe {
+            extern "C" {
+              fn __android_log_print(
+                prio: std::os::raw::c_int,
+                tag: *const std::os::raw::c_char,
+                fmt: *const std::os::raw::c_char,
+                ...
+              ) -> std::os::raw::c_int;
+            }
+            __android_log_print(6, tag.as_ptr(), msg_c.as_ptr());
+          }
+        }
+      }
+      eprintln!("{}", msg);
+    }));
+  }
+
   tauri::Builder::default()
     .manage(AppState::default())
     .plugin(tauri_plugin_store::Builder::default().build())
@@ -34,13 +57,17 @@ pub fn run() {
       #[cfg(desktop)]
       {
         // Guard desktop window operations (decorations, window resizing, centering)
+        if cfg!(debug_assertions) {
+          app.handle().plugin(
+            tauri_plugin_log::Builder::default()
+              .level(log::LevelFilter::Info)
+              .build(),
+          )?;
+        }
       }
-      if cfg!(debug_assertions) {
-        app.handle().plugin(
-          tauri_plugin_log::Builder::default()
-            .level(log::LevelFilter::Info)
-            .build(),
-        )?;
+      #[cfg(not(desktop))]
+      {
+        let _ = app;
       }
       Ok(())
     })

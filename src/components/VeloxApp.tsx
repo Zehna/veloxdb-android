@@ -27,10 +27,12 @@ import {
 	engineLabel,
 	useAppState,
 } from "@/hooks/useAppState";
+import { useIsMobile } from "@/hooks/useIsMobile";
 
 export function VeloxApp() {
 	const { t } = useTranslation();
 	const queryWorkspaceRef = useRef<import("@/features/queries/components/QueryWorkspace").QueryWorkspaceHandle>(null);
+	const isMobile = useIsMobile();
 
 	const app = useAppState(queryWorkspaceRef);
 
@@ -122,15 +124,48 @@ export function VeloxApp() {
 		return () => window.removeEventListener("keydown", onKeyDown);
 	}, [setCommandPaletteOpen, setConnectionDialogOpen]);
 
+	// On phones the sidebar becomes an overlay drawer: start closed when the
+	// viewport becomes phone-sized so the workspace gets the full width.
+	useEffect(() => {
+		if (isMobile) setIsSidebarCollapsed(true);
+	}, [isMobile, setIsSidebarCollapsed]);
+
+	const closeSidebarOnMobile = () => {
+		if (isMobile) setIsSidebarCollapsed(true);
+	};
+
 	const layoutStyle = {
 		"--sidebar-width": `${isSidebarCollapsed ? 0 : sidebarWidth}px`,
 	} as CSSProperties;
 
 	return (
-		<div className="flex h-screen overflow-hidden bg-background text-foreground" style={layoutStyle}>
+		<div className="app-shell relative flex overflow-hidden bg-background text-foreground" style={layoutStyle}>
+			{!isSidebarCollapsed && isMobile ? (
+				<div
+					className="fixed inset-0 z-40 bg-black/50"
+					onClick={() => setIsSidebarCollapsed(true)}
+					aria-hidden="true"
+				/>
+			) : null}
 			{!isSidebarCollapsed ? (
 				<>
-					<div className="min-w-0 shrink-0" style={{ width: "var(--sidebar-width)" }}>
+					<div
+						className={
+							isMobile
+								? "fixed inset-y-0 left-0 z-50 min-w-0 border-r border-border bg-background shadow-xl"
+								: "min-w-0 shrink-0"
+						}
+						style={
+							isMobile
+								? {
+									width: "min(85vw, var(--sidebar-width))",
+									paddingTop: "env(safe-area-inset-top)",
+									paddingBottom: "env(safe-area-inset-bottom)",
+									paddingLeft: "env(safe-area-inset-left)",
+								}
+								: { width: "var(--sidebar-width)" }
+						}
+					>
 						<ErrorBoundary fallback={<div className="px-3 py-4 text-xs text-destructive">Sidebar failed to render.</div>}>
 							{connectionsQuery.isError ? (
 								<div className="px-3 py-4 text-xs text-destructive">{connectionsErrorMessage}</div>
@@ -148,7 +183,10 @@ export function VeloxApp() {
 									onSearchChange={setTableSearch}
 									onOpenConnection={() => setConnectionDialogOpen(true)}
 									onSelectConnection={handleSelectConnection}
-									onSelectTable={handleSelectTable}
+									onSelectTable={(...args: Parameters<typeof handleSelectTable>) => {
+										handleSelectTable(...args);
+										closeSidebarOnMobile();
+									}}
 									onTableQuickAction={handleTableQuickAction}
 									onRefreshConnection={handleRefreshConnection}
 									onRefreshTable={handleRefreshTable}
@@ -168,17 +206,19 @@ export function VeloxApp() {
 							)}
 						</ErrorBoundary>
 					</div>
-					<div
-						className="w-1 shrink-0 cursor-col-resize border-r border-border bg-muted/20 transition hover:bg-muted/60"
-						onPointerDown={handleSidebarResizeStart}
-						title="Resize sidebar"
-					/>
+					{!isMobile ? (
+						<div
+							className="w-1 shrink-0 cursor-col-resize border-r border-border bg-muted/20 transition hover:bg-muted/60"
+							onPointerDown={handleSidebarResizeStart}
+							title="Resize sidebar"
+						/>
+					) : null}
 				</>
 			) : null}
 
 			<main className="grid min-h-0 min-w-0 flex-1 grid-rows-[auto_minmax(0,1fr)]">
 				<header className="min-w-0 shrink-0 overflow-x-auto border-b border-border">
-					<div className="flex min-w-full w-max items-center justify-between gap-4 px-5 py-3">
+					<div className="flex min-w-full w-max items-center justify-between gap-2 px-3 py-2 md:gap-4 md:px-5 md:py-3">
 						<div className="flex min-w-0 flex-1 items-center gap-3">
 							{isSidebarCollapsed ? (
 								<Button variant="outline" size="icon-sm" className="shrink-0"
@@ -197,8 +237,8 @@ export function VeloxApp() {
 								</TabsList>
 							</Tabs>
 							<div className="min-w-0">
-								<p className="text-[11px] uppercase tracking-[0.24em] text-muted-foreground">VeloxDB.dev</p>
-								<p className="truncate text-sm text-foreground">
+								<p className="hidden text-[11px] uppercase tracking-[0.24em] text-muted-foreground sm:block">VeloxDB.dev</p>
+								<p className="max-w-[40vw] truncate text-sm text-foreground md:max-w-none">
 									{connection ? connectionHeadline(connection) : t("workspace.chooseConnection")}
 								</p>
 							</div>
@@ -218,7 +258,7 @@ export function VeloxApp() {
 								title={t("veloxy.askVeloxy")}
 							>
 								<RobotIcon className="size-4" />
-								{t("veloxy.askVeloxy")}
+								<span className="hidden sm:inline">{t("veloxy.askVeloxy")}</span>
 							</Button>
 						</div>
 					</div>

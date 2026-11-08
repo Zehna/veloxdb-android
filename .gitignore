@@ -29,7 +29,7 @@ lerna-debug.log*
 /src-tauri/target/release/bundle/msi
 /src-tauri/target/CACHEDIR.TAG
 /src-tauri/target/.rustc_info.json
-/src-tauri/gen
+/src-tauri/gen/schemas
 /src-tauri/gen-c
 /src-tauri/gen-cxx
 /src-tauri/gen-rust

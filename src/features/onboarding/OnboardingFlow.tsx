@@ -220,7 +220,7 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
 	const StepIcon = current.icon;
 
 	return (
-		<div className="relative flex h-screen flex-col overflow-hidden bg-background text-foreground">
+		<div className="app-shell relative flex flex-col overflow-hidden bg-background text-foreground">
 			<ParticleBackground />
 
 			{/* Gradient accent */}

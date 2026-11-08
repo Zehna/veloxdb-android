@@ -365,3 +365,28 @@
 .diagram-edge-animated {
   animation: diagram-edge-dash-flow 900ms linear infinite;
 }
+
+
+/* ── Mobile / Android WebView ─────────────────────────────────────────────── */
+
+@layer base {
+  /* Prevent pull-to-refresh / rubber-band scrolling of the whole page and the
+     grey tap highlight inside the Android WebView. */
+  html,
+  body {
+    overscroll-behavior: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
+/* Full-height app shell that respects notches, status bar and gesture bar
+   (requires `viewport-fit=cover` in index.html). `dvh` tracks the visible
+   viewport so the layout is not cut off when browser/system bars change. */
+.app-shell {
+  height: 100vh;
+  height: 100dvh;
+  padding-top: env(safe-area-inset-top);
+  padding-right: env(safe-area-inset-right);
+  padding-bottom: env(safe-area-inset-bottom);
+  padding-left: env(safe-area-inset-left);
+}
